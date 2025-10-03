@@ -1,0 +1,676 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'employee_management_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+
+/// Employee dashboard widget shown after successful authentication
+class EmployeeDashboard extends StatefulWidget {
+  const EmployeeDashboard({super.key});
+
+  @override
+  State<EmployeeDashboard> createState() => _EmployeeDashboardState();
+}
+
+class _EmployeeDashboardState extends State<EmployeeDashboard> {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Brayan Lee\'s Payroll System'),
+            backgroundColor: const Color(0xFF1E3A8A),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            actions: [
+              // User info dropdown
+              PopupMenuButton<String>(
+                onSelected: _handleMenuSelection,
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person),
+                        const SizedBox(width: 8),
+                        Text(_getUserDisplayName(authProvider)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'settings',
+                    child: Row(
+                      children: [
+                        Icon(Icons.settings),
+                        SizedBox(width: 8),
+                        Text('Settings'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout),
+                        SizedBox(width: 8),
+                        Text('Logout'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF1E3A8A).withOpacity(0.1),
+                  Colors.white,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Welcome Section
+                    _buildWelcomeSection(authProvider),
+
+                    const SizedBox(height: 32),
+
+                    // Quick Actions
+                    const Text(
+                      'Quick Actions',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E3A8A),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _buildQuickActionsGrid(),
+
+                    const SizedBox(height: 32),
+
+                    // Payroll Information
+                    const Text(
+                      'Payroll Information',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E3A8A),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _buildPayrollCards(),
+
+                    const SizedBox(height: 32),
+
+                    // Recent Activity
+                    const Text(
+                      'Recent Activity',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E3A8A),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _buildRecentActivityList(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _showSupportDialog,
+            backgroundColor: const Color(0xFF1E3A8A),
+            child: const Icon(Icons.support),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWelcomeSection(AuthProvider authProvider) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.person,
+                size: 40,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back, ${_getUserDisplayName(authProvider)}!',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _getUserRole(authProvider),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              _getCurrentDateTime(),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsGrid() {
+    final actions = [
+      {
+        'icon': Icons.access_time,
+        'label': 'Clock In/Out',
+        'color': Colors.green,
+        'onTap': _handleClockInOut,
+      },
+      {
+        'icon': Icons.receipt,
+        'label': 'View Payslip',
+        'color': Colors.blue,
+        'onTap': _handleViewPayslip,
+      },
+      {
+        'icon': Icons.calendar_today,
+        'label': 'Time Off',
+        'color': Colors.orange,
+        'onTap': _handleTimeOff,
+      },
+      {
+        'icon': Icons.analytics,
+        'label': 'Reports',
+        'color': Colors.purple,
+        'onTap': _handleReports,
+      {
+        'icon': Icons.people,
+        'label': 'Manage Employees',
+        'color': Colors.teal,
+        'onTap': _handleManageEmployees,
+      },
+      },
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: actions.length,
+      itemBuilder: (context, index) {
+        final action = actions[index];
+        return _buildActionCard(
+          icon: action['icon'] as IconData,
+          label: action['label'] as String,
+          color: action['color'] as Color,
+          onTap: action['onTap'] as VoidCallback,
+        );
+      },
+    );
+  }
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withOpacity(0.1),
+                color.withOpacity(0.05),
+              ],
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 40,
+                color: color,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: color.withOpacity(0.8),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPayrollCards() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildPayrollCard(
+                title: 'This Month',
+                amount: '\$3,450.00',
+                subtitle: 'Gross Pay',
+                color: Colors.green,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildPayrollCard(
+                title: 'Next Payday',
+                amount: 'Dec 15',
+                subtitle: '2024',
+                color: Colors.blue,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildPayrollCard(
+                title: 'Hours Worked',
+                amount: '160.5',
+                subtitle: 'This Month',
+                color: Colors.orange,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildPayrollCard(
+                title: 'PTO Balance',
+                amount: '24.5',
+                subtitle: 'Days',
+                color: Colors.purple,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPayrollCard({
+    required String title,
+    required String amount,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              amount,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentActivityList() {
+    final activities = [
+      {
+        'type': 'Clock In',
+        'time': '9:00 AM',
+        'date': 'Today',
+        'icon': Icons.login,
+        'color': Colors.green,
+      },
+      {
+        'type': 'Break Start',
+        'time': '12:00 PM',
+        'date': 'Today',
+        'icon': Icons.pause,
+        'color': Colors.orange,
+      },
+      {
+        'type': 'Break End',
+        'time': '1:00 PM',
+        'date': 'Today',
+        'icon': Icons.play_arrow,
+        'color': Colors.blue,
+      },
+      {
+        'type': 'Payslip Generated',
+        'time': 'Yesterday',
+        'date': 'Nov 30, 2024',
+        'icon': Icons.receipt,
+        'color': Colors.purple,
+      },
+    ];
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: activities.length,
+        separatorBuilder: (context, index) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final activity = activities[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: (activity['color'] as Color).withOpacity(0.1),
+              child: Icon(
+                activity['icon'] as IconData,
+                color: activity['color'] as Color,
+              ),
+            ),
+            title: Text(
+              activity['type'] as String,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            subtitle: Text(activity['date'] as String),
+            trailing: Text(
+              activity['time'] as String,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _getUserDisplayName(AuthProvider authProvider) {
+    final user = authProvider.currentUser;
+    if (user != null && user.containsKey('name')) {
+      return user['name'] as String;
+    }
+    return 'Employee';
+  }
+
+  String _getUserRole(AuthProvider authProvider) {
+    final user = authProvider.currentUser;
+    if (user != null && user.containsKey('role')) {
+      return (user['role'] as String).toUpperCase();
+    }
+    return 'EMPLOYEE';
+  }
+
+  String _getCurrentDateTime() {
+    final now = DateTime.now();
+    return '${_getMonthName(now.month)} ${now.day}, ${now.year}';
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+  }
+
+  void _handleMenuSelection(String value) {
+    switch (value) {
+      case 'profile':
+        _showProfileDialog();
+        break;
+      case 'settings':
+        _showSettingsDialog();
+        break;
+      case 'logout':
+        _handleLogout();
+        break;
+    }
+  }
+
+  void _handleClockInOut() {
+    _showSnackBar('Clock In/Out feature coming soon!');
+  }
+
+  void _handleViewPayslip() {
+    _showSnackBar('Payslip view feature coming soon!');
+  }
+
+  void _handleReports() {
+    _showSnackBar('Reports feature coming soon!');
+  }
+
+  void _handleManageEmployees() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const EmployeeManagementScreen(),
+      ),
+    );
+  }
+  void _handleTimeOff() {
+    _showSnackBar('Time off request feature coming soon!');
+  }
+
+  void _handleReports() {
+    _showSnackBar('Reports feature coming soon!');
+  }
+
+  void _handleLogout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await context.read<AuthProvider>().logout();
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProfileDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: ${_getUserDisplayName(context.read<AuthProvider>())}'),
+            const SizedBox(height: 8),
+            Text('Role: ${_getUserRole(context.read<AuthProvider>())}'),
+            const SizedBox(height: 8),
+            Text('Employee ID: ${context.read<AuthProvider>().currentUserId ?? 'N/A'}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Settings'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.security),
+              title: Text('Biometric Settings'),
+              subtitle: Text('Manage fingerprint/face authentication'),
+            ),
+            ListTile(
+              leading: Icon(Icons.pin),
+              title: Text('PIN Settings'),
+              subtitle: Text('Change your PIN'),
+            ),
+            ListTile(
+              leading: Icon(Icons.notifications),
+              title: Text('Notifications'),
+              subtitle: Text('Manage notification preferences'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSupportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Support'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Need help? Contact support:'),
+            SizedBox(height: 16),
+            SelectableText(
+              'Email: support@brayanlee-payroll.com\nPhone: +1 (555) 123-4567',
+              style: TextStyle(fontFamily: 'monospace'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
