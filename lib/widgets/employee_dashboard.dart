@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/attendance_provider.dart';
 import '../services/secure_storage_service.dart';
 import 'employee_management_screen.dart';
+import 'clock_widget.dart';
+import 'payslip_widget.dart';
 
 /// Employee dashboard widget shown after successful authentication
 class EmployeeDashboard extends StatefulWidget {
@@ -248,6 +251,12 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
         'label': 'Manage Employees',
         'color': Colors.teal,
         'onTap': _handleManageEmployees,
+      },
+      {
+        'icon': Icons.payments,
+        'label': 'Payroll',
+        'color': Colors.indigo,
+        'onTap': _handlePayroll,
       },
     ];
 
@@ -556,6 +565,10 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
     _showSnackBar('Time off request feature coming soon!');
   }
 
+  void _handlePayroll() {
+    _showSnackBar('Payroll management feature coming soon!');
+  }
+
   void _handleLogout() {
     showDialog(
       context: context,
@@ -766,6 +779,11 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
                       title: 'Manage Employees',
                       onTap: () => _navigateToSection('employees'),
                     ),
+                    _buildDrawerItem(
+                      icon: Icons.payments,
+                      title: 'Payroll',
+                      onTap: () => _navigateToSection('payroll'),
+                    ),
                     const Divider(),
                     _buildDrawerItem(
                       icon: Icons.settings,
@@ -832,6 +850,9 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
         break;
       case 'employees':
         _handleManageEmployees();
+        break;
+      case 'payroll':
+        _handlePayroll();
         break;
       case 'settings':
         _showSettingsDialog();

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:item_manager/services/secure_storage_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('SecureStorageService', () {
     late SecureStorageService secureStorageService;
     late FlutterSecureStorage mockSecureStorage;
