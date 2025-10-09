@@ -550,7 +550,11 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
   }
 
   void _handleClockInOut() {
-    _showSnackBar('Clock In/Out feature coming soon!');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ClockWidget(),
+      ),
+    );
   }
 
   void _handleViewPayslip() {
