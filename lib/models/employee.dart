@@ -167,9 +167,17 @@ enum EmploymentType {
   final String displayName;
 
   static EmploymentType fromString(String value) {
+    final lowerValue = value.toLowerCase();
+    final cleanValue = lowerValue.replaceAll('-', '');
+    
     return EmploymentType.values.firstWhere(
-      (type) => type.name == value.toLowerCase().replaceAll('-', ''),
-      orElse: () => EmploymentType.fullTime,
+      (type) => type.name == cleanValue || type.name == lowerValue,
+      orElse: () {
+        // Handle special cases
+        if (cleanValue == 'parttime') return EmploymentType.partTime;
+        if (cleanValue == 'fulltime') return EmploymentType.fullTime;
+        return EmploymentType.fullTime;
+      },
     );
   }
 }

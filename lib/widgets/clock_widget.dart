@@ -38,7 +38,7 @@ class _ClockWidgetState extends State<ClockWidget> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF1E3A8A).withOpacity(0.1),
+                  const Color(0x1A1E3A8A),
                   Colors.white,
                 ],
               ),
@@ -84,7 +84,7 @@ class _ClockWidgetState extends State<ClockWidget> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: const Color(0x1A808080),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -163,7 +163,7 @@ class _ClockWidgetState extends State<ClockWidget> {
               'Clocked in at: ${_formatTime(attendanceProvider.activeAttendance!.clockInTime)}',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.8),
+                color: Color(0xCCFFFFFF),
               ),
             ),
           ] else ...[
@@ -186,7 +186,7 @@ class _ClockWidgetState extends State<ClockWidget> {
               'Ready to start your shift',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.8),
+                color: Color(0xCCFFFFFF),
               ),
             ),
           ],

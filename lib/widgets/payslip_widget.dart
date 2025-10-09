@@ -87,7 +87,7 @@ class _PayslipWidgetState extends State<PayslipWidget> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF1E3A8A).withOpacity(0.1),
+                  const Color(0x1A1E3A8A),
                   Colors.white,
                 ],
               ),
@@ -152,7 +152,7 @@ class _PayslipWidgetState extends State<PayslipWidget> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: const Color(0x1A808080),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -196,7 +196,7 @@ class _PayslipWidgetState extends State<PayslipWidget> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: const Color(0x1A808080),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -262,7 +262,7 @@ class _PayslipWidgetState extends State<PayslipWidget> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E3A8A).withOpacity(0.1),
+        color: const Color(0x1A1E3A8A),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -296,7 +296,7 @@ class _PayslipWidgetState extends State<PayslipWidget> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: const Color(0x1A808080),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -335,7 +335,7 @@ class _PayslipWidgetState extends State<PayslipWidget> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: const Color(0x1A808080),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -405,7 +405,7 @@ class _PayslipWidgetState extends State<PayslipWidget> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: const Color(0x1A808080),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
