@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'providers/employee_provider.dart';
 import 'providers/attendance_provider.dart';
 import 'providers/payroll_provider.dart';
+import 'providers/leave_provider.dart';
 import 'services/secure_storage_service.dart';
 import 'widgets/employee_dashboard.dart';
 
@@ -31,6 +32,7 @@ class BiometricPayrollApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (context) => AttendanceProvider(secureStorage)),
         ChangeNotifierProvider(create: (context) => PayrollProvider(secureStorage)),
+        ChangeNotifierProvider(create: (context) => LeaveProvider(secureStorage)),
       ],
       child: MaterialApp(
         title: 'Brayan Lee\'s Payroll System',

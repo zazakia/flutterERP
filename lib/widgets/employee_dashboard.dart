@@ -6,6 +6,7 @@ import '../services/secure_storage_service.dart';
 import 'employee_management_screen.dart';
 import 'clock_widget.dart';
 import 'payslip_widget.dart';
+import 'leave_management_screen.dart';
 
 /// Employee dashboard widget shown after successful authentication
 class EmployeeDashboard extends StatefulWidget {
@@ -257,6 +258,12 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
         'label': 'Payroll',
         'color': Colors.indigo,
         'onTap': _handlePayroll,
+      },
+      {
+        'icon': Icons.time_to_leave,
+        'label': 'Leave Requests',
+        'color': Colors.purple,
+        'onTap': _handleLeaveRequests,
       },
     ];
 
@@ -569,6 +576,14 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
     _showSnackBar('Payroll management feature coming soon!');
   }
 
+  void _handleLeaveRequests() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const LeaveManagementScreen(),
+      ),
+    );
+  }
+
   void _handleLogout() {
     showDialog(
       context: context,
@@ -784,6 +799,11 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
                       title: 'Payroll',
                       onTap: () => _navigateToSection('payroll'),
                     ),
+                    _buildDrawerItem(
+                      icon: Icons.time_to_leave,
+                      title: 'Leave Requests',
+                      onTap: () => _navigateToSection('leave'),
+                    ),
                     const Divider(),
                     _buildDrawerItem(
                       icon: Icons.settings,
@@ -853,6 +873,9 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
         break;
       case 'payroll':
         _handlePayroll();
+        break;
+      case 'leave':
+        _handleLeaveRequests();
         break;
       case 'settings':
         _showSettingsDialog();
