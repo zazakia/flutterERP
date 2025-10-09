@@ -10,22 +10,24 @@ import 'package:mockito/annotations.dart';
 
 // Generate mocks
 @GenerateMocks([SecureStorageService])
-import 'clock_widget_test.mocks.dart';
+import 'clock_integration_test.mocks.dart';
 
 void main() {
-  group('ClockWidget', () {
-    testWidgets('renders correctly', (WidgetTester tester) async {
-      // Create a mock secure storage
-      final mockSecureStorage = MockSecureStorageService();
-      
-      // Mock the getAccessToken method to return a fake token
+  group('Clock Integration', () {
+    late MockSecureStorageService mockSecureStorage;
+    late AuthProvider authProvider;
+    late AttendanceProvider attendanceProvider;
+
+    setUp(() {
+      mockSecureStorage = MockSecureStorageService();
       when(mockSecureStorage.getAccessToken()).thenAnswer((_) async => 'fake-token');
       
-      // Create providers
-      final authProvider = AuthProvider();
-      final attendanceProvider = AttendanceProvider(mockSecureStorage);
-      
-      // Build the widget
+      authProvider = AuthProvider();
+      attendanceProvider = AttendanceProvider(mockSecureStorage);
+    });
+
+    testWidgets('Clock widget displays correct UI elements', (WidgetTester tester) async {
+      // Build the clock widget with proper providers
       await tester.pumpWidget(
         MaterialApp(
           home: MultiProvider(
@@ -37,10 +39,12 @@ void main() {
           ),
         ),
       );
-      
-      // Verify that the widget renders correctly
+
+      // Verify core UI elements are present
       expect(find.text('Clock In/Out'), findsOneWidget);
       expect(find.text('Current Time'), findsOneWidget);
+      expect(find.text('Clock Status'), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsOneWidget);
     });
   });
 }
