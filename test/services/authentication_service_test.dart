@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:item_manager/services/authentication_service.dart';
 import 'package:item_manager/services/secure_storage_service.dart';
 import 'package:item_manager/services/biometric_auth_service.dart';
@@ -201,6 +202,8 @@ void main() {
 
     test('handles biometric enrollment when already enrolled', () async {
       // Arrange
+      when(mockSecureStorage.getUserId()).thenAnswer((_) async => 'test-user');
+      when(mockSecureStorage.getDeviceId()).thenAnswer((_) async => 'test-device');
       when(mockBiometricAuth.isBiometricEnrolled()).thenAnswer((_) async => true);
 
       // Act
@@ -212,23 +215,8 @@ void main() {
       expect(result.message, contains('already enrolled'));
     });
 
-    test('sets up PIN successfully', () async {
-      // Arrange
-      const testPin = '1234';
-
-      final mockPinResult = PinAuthResult(
-        success: true,
-        message: 'PIN set up successfully',
-      );
-      when(mockPinAuth.setupPin(testPin)).thenAnswer((_) async => mockPinResult);
-
-      // Act
-      final result = await authenticationService.setupPin(testPin);
-
-      // Assert
-      expect(result.success, isTrue);
-      expect(result.message, contains('successfully'));
-    });
+    // Note: setupPin method has been removed from AuthenticationService
+    // PIN setup is now handled directly through PinAuthService
 
     test('checks biometric availability correctly', () async {
       // Arrange
@@ -257,6 +245,7 @@ void main() {
       // Arrange
       when(mockBiometricAuth.isBiometricAvailable()).thenAnswer((_) async => true);
       when(mockBiometricAuth.isBiometricEnrolled()).thenAnswer((_) async => true);
+      when(mockBiometricAuth.getAvailableBiometricTypes()).thenAnswer((_) async => [BiometricType.fingerprint]);
       when(mockPinAuth.isPinSet()).thenAnswer((_) async => true);
 
       // Act
