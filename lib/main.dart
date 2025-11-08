@@ -7,6 +7,7 @@ import 'providers/employee_provider.dart';
 import 'providers/attendance_provider.dart';
 import 'providers/payroll_provider.dart';
 import 'providers/leave_provider.dart';
+import 'providers/database_provider.dart';
 import 'services/secure_storage_service.dart';
 import 'widgets/employee_dashboard.dart';
 
@@ -26,9 +27,17 @@ class BiometricPayrollApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AuthProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, EmployeeProvider>(
+        ChangeNotifierProvider(
+          create: (context) {
+            final dbProvider = DatabaseProvider();
+            dbProvider.initialize(secureStorage);
+            return dbProvider;
+          },
+        ),
+        ChangeNotifierProxyProvider2<AuthProvider, DatabaseProvider, EmployeeProvider>(
           create: (context) => EmployeeProvider(secureStorage),
-          update: (context, authProvider, previous) => previous ?? EmployeeProvider(secureStorage),
+          update: (context, authProvider, dbProvider, previous) => 
+            previous ?? EmployeeProvider(secureStorage, dbProvider),
         ),
         ChangeNotifierProvider(create: (context) => AttendanceProvider(secureStorage)),
         ChangeNotifierProvider(create: (context) => PayrollProvider(secureStorage)),

@@ -32,12 +32,22 @@ A comprehensive Employee Management System built with Flutter that includes biom
 - Tax and deduction calculations
 - Bonus and overtime support
 
+### Offline Capabilities
+- **Offline-First Architecture**: All operations work without internet
+- **Local SQLite Database**: Fast, reliable local data storage
+- **Automatic Sync**: Changes sync automatically when online
+- **Conflict Resolution**: Smart handling of data conflicts
+- **Sync Status**: Real-time sync status and pending changes indicator
+- **Background Sync**: Seamless data synchronization
+
 ### User Interface
 - Modern Material Design
 - Responsive layout for all device sizes
 - Intuitive navigation
 - Dark mode support
 - Customizable dashboard
+- Offline/Online status indicators
+- Automatic background sync
 
 ## Technical Architecture
 
@@ -45,9 +55,10 @@ A comprehensive Employee Management System built with Flutter that includes biom
 - **Framework**: Flutter
 - **State Management**: Provider
 - **Authentication**: Local authentication (biometric/PIN)
-- **Storage**: Secure storage, Shared preferences
-- **Networking**: HTTP client
+- **Storage**: SQLite (Drift), Secure storage, Shared preferences
+- **Networking**: HTTP client with offline-first approach
 - **UI**: Material Design
+- **Offline Support**: Full CRUD operations with automatic sync
 
 ### Backend (Conceptual)
 - **API**: RESTful API

@@ -3,15 +3,25 @@ import '../models/employee.dart';
 import '../services/employee_api_service.dart';
 import '../services/bulk_operations_service.dart';
 import '../services/secure_storage_service.dart';
+import '../repositories/simple_employee_repository.dart';
+import '../providers/database_provider.dart';
 
 /// Provider for employee management state
 class EmployeeProvider extends ChangeNotifier {
   final EmployeeApiService _employeeApiService;
   final BulkOperationsService _bulkOperationsService;
+  SimpleEmployeeRepository? _employeeRepository;
+  final DatabaseProvider? _databaseProvider;
 
-  EmployeeProvider(SecureStorageService secureStorage)
+  EmployeeProvider(SecureStorageService secureStorage, [this._databaseProvider])
       : _employeeApiService = EmployeeApiService(secureStorage),
-        _bulkOperationsService = BulkOperationsService(EmployeeApiService(secureStorage));
+        _bulkOperationsService = BulkOperationsService(EmployeeApiService(secureStorage)) {
+    
+    // Initialize repository if database provider is available
+    if (_databaseProvider?.isInitialized == true) {
+      _employeeRepository = _databaseProvider!.employeeRepository;
+    }
+  }
 
   // State
   List<Employee> _employees = [];
@@ -38,7 +48,7 @@ class EmployeeProvider extends ChangeNotifier {
   String get statusFilter => _statusFilter;
   String get employmentTypeFilter => _employmentTypeFilter;
 
-  /// Load employees with pagination and filters
+  /// Load employees with pagination and filters (offline-first)
   Future<void> loadEmployees({
     bool refresh = false,
     int? page,
@@ -60,32 +70,53 @@ class EmployeeProvider extends ChangeNotifier {
     _setError(null);
 
     try {
-      final result = await _employeeApiService.getEmployees(
-        page: _currentPage,
-        limit: 50,
-        search: search ?? (_searchQuery.isNotEmpty ? _searchQuery : null),
-        role: role ?? (_roleFilter != 'All' ? _roleFilter : null),
-        status: status ?? (_statusFilter != 'All'
-            ? (_statusFilter == 'Active' ? true : false)
-            : null),
-      );
+      // Use repository if available (offline-first), otherwise fallback to API
+      if (_employeeRepository != null) {
+        final employees = await _employeeRepository!.getEmployees(
+          search: search ?? (_searchQuery.isNotEmpty ? _searchQuery : null),
+          role: role ?? (_roleFilter != 'All' ? _roleFilter : null),
+          status: status ?? (_statusFilter != 'All'
+              ? (_statusFilter == 'Active' ? true : false)
+              : null),
+        );
 
-      result.fold(
-        (employees) {
-          if (refresh || _currentPage == 1) {
-            _employees = employees;
-          } else {
-            _employees.addAll(employees);
-          }
+        if (refresh || _currentPage == 1) {
+          _employees = employees;
+        } else {
+          _employees.addAll(employees);
+        }
 
-          // Check if there are more pages
-          _hasMorePages = employees.length == 50;
-          if (_hasMorePages) {
-            _currentPage++;
-          }
-        },
-        (error) => _setError(error.message),
-      );
+        // For local data, we don't have pagination, so set hasMorePages to false
+        _hasMorePages = false;
+      } else {
+        // Fallback to API service
+        final result = await _employeeApiService.getEmployees(
+          page: _currentPage,
+          limit: 50,
+          search: search ?? (_searchQuery.isNotEmpty ? _searchQuery : null),
+          role: role ?? (_roleFilter != 'All' ? _roleFilter : null),
+          status: status ?? (_statusFilter != 'All'
+              ? (_statusFilter == 'Active' ? true : false)
+              : null),
+        );
+
+        result.fold(
+          (employees) {
+            if (refresh || _currentPage == 1) {
+              _employees = employees;
+            } else {
+              _employees.addAll(employees);
+            }
+
+            // Check if there are more pages
+            _hasMorePages = employees.length == 50;
+            if (_hasMorePages) {
+              _currentPage++;
+            }
+          },
+          (error) => _setError(error.message),
+        );
+      }
     } catch (e) {
       _setError('Failed to load employees: $e');
     } finally {
@@ -93,25 +124,34 @@ class EmployeeProvider extends ChangeNotifier {
     }
   }
 
-  /// Create a new employee
+  /// Create a new employee (offline-first)
   Future<bool> createEmployee(Employee employee) async {
     _setLoading(true);
     _setError(null);
 
     try {
-      final result = await _employeeApiService.createEmployee(employee);
+      if (_employeeRepository != null) {
+        // Use repository (offline-first)
+        final createdEmployee = await _employeeRepository!.createEmployee(employee);
+        _employees.insert(0, createdEmployee);
+        notifyListeners();
+        return true;
+      } else {
+        // Fallback to API service
+        final result = await _employeeApiService.createEmployee(employee);
 
-      return result.fold(
-        (createdEmployee) {
-          _employees.insert(0, createdEmployee);
-          notifyListeners();
-          return true;
-        },
-        (error) {
-          _setError(error.message);
-          return false;
-        },
-      );
+        return result.fold(
+          (createdEmployee) {
+            _employees.insert(0, createdEmployee);
+            notifyListeners();
+            return true;
+          },
+          (error) {
+            _setError(error.message);
+            return false;
+          },
+        );
+      }
     } catch (e) {
       _setError('Failed to create employee: $e');
       return false;
@@ -120,28 +160,40 @@ class EmployeeProvider extends ChangeNotifier {
     }
   }
 
-  /// Update an existing employee
+  /// Update an existing employee (offline-first)
   Future<bool> updateEmployee(String employeeId, Employee updatedEmployee) async {
     _setLoading(true);
     _setError(null);
 
     try {
-      final result = await _employeeApiService.updateEmployee(employeeId, updatedEmployee);
+      if (_employeeRepository != null) {
+        // Use repository (offline-first)
+        final employee = await _employeeRepository!.updateEmployee(employeeId, updatedEmployee);
+        final index = _employees.indexWhere((e) => e.employeeId == employeeId);
+        if (index != -1) {
+          _employees[index] = employee;
+          notifyListeners();
+        }
+        return true;
+      } else {
+        // Fallback to API service
+        final result = await _employeeApiService.updateEmployee(employeeId, updatedEmployee);
 
-      return result.fold(
-        (employee) {
-          final index = _employees.indexWhere((e) => e.employeeId == employeeId);
-          if (index != -1) {
-            _employees[index] = employee;
-            notifyListeners();
-          }
-          return true;
-        },
-        (error) {
-          _setError(error.message);
-          return false;
-        },
-      );
+        return result.fold(
+          (employee) {
+            final index = _employees.indexWhere((e) => e.employeeId == employeeId);
+            if (index != -1) {
+              _employees[index] = employee;
+              notifyListeners();
+            }
+            return true;
+          },
+          (error) {
+            _setError(error.message);
+            return false;
+          },
+        );
+      }
     } catch (e) {
       _setError('Failed to update employee: $e');
       return false;
@@ -150,25 +202,34 @@ class EmployeeProvider extends ChangeNotifier {
     }
   }
 
-  /// Delete an employee
+  /// Delete an employee (offline-first)
   Future<bool> deleteEmployee(String employeeId) async {
     _setLoading(true);
     _setError(null);
 
     try {
-      final result = await _employeeApiService.deleteEmployee(employeeId);
+      if (_employeeRepository != null) {
+        // Use repository (offline-first)
+        await _employeeRepository!.deleteEmployee(employeeId);
+        _employees.removeWhere((e) => e.employeeId == employeeId);
+        notifyListeners();
+        return true;
+      } else {
+        // Fallback to API service
+        final result = await _employeeApiService.deleteEmployee(employeeId);
 
-      return result.fold(
-        (_) {
-          _employees.removeWhere((e) => e.employeeId == employeeId);
-          notifyListeners();
-          return true;
-        },
-        (error) {
-          _setError(error.message);
-          return false;
-        },
-      );
+        return result.fold(
+          (_) {
+            _employees.removeWhere((e) => e.employeeId == employeeId);
+            notifyListeners();
+            return true;
+          },
+          (error) {
+            _setError(error.message);
+            return false;
+          },
+        );
+      }
     } catch (e) {
       _setError('Failed to delete employee: $e');
       return false;
@@ -334,6 +395,38 @@ class EmployeeProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  /// Sync with server (manual trigger)
+  Future<bool> syncWithServer() async {
+    if (_employeeRepository == null) {
+      _setError('Offline mode not available');
+      return false;
+    }
+
+    _setLoading(true);
+    _setError(null);
+
+    try {
+      await _employeeRepository!.syncWithServer();
+      // Reload employees after sync
+      await loadEmployees(refresh: true);
+      return true;
+    } catch (e) {
+      _setError('Sync failed: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Get sync status
+  Future<Map<String, dynamic>?> getSyncStatus() async {
+    if (_employeeRepository == null) return null;
+    return await _employeeRepository!.getSyncStatus();
+  }
+
+  /// Check if offline mode is available
+  bool get isOfflineModeAvailable => _employeeRepository != null;
 
   /// Dispose of resources
   @override

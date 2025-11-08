@@ -7,6 +7,8 @@ import 'employee_management_screen.dart';
 import 'clock_widget.dart';
 import 'payslip_widget.dart';
 import 'leave_management_screen.dart';
+import 'sync_status_widget.dart';
+import 'offline_banner.dart';
 
 /// Employee dashboard widget shown after successful authentication
 class EmployeeDashboard extends StatefulWidget {
@@ -23,7 +25,15 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
       builder: (context, authProvider, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Dashboard'),
+            title: const Text(
+              'FlutterERP',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            centerTitle: true,
             backgroundColor: const Color(0xFF1E3A8A),
             foregroundColor: Colors.white,
             elevation: 0,
@@ -73,23 +83,30 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
             ],
           ),
           drawer: _buildNavigationDrawer(authProvider),
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF1E3A8A).withOpacity(0.1),
-                  Colors.white,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: SingleChildScrollView(
+          body: Column(
+            children: [
+              const OfflineBanner(),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF1E3A8A).withOpacity(0.1),
+                        Colors.white,
+                      ],
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Sync Status
+                    const SyncStatusWidget(),
+
                     // Welcome Section
                     _buildWelcomeSection(authProvider),
 
@@ -140,11 +157,14 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
                     const SizedBox(height: 16),
 
                     _buildRecentActivityList(),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+        ],
+      ),
           floatingActionButton: FloatingActionButton(
             onPressed: _showSupportDialog,
             backgroundColor: const Color(0xFF1E3A8A),
